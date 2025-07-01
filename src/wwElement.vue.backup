@@ -27,9 +27,9 @@
             toast.variant === 'success' ? 'border-green-200 bg-green-50 text-green-900 dark:border-green-800 dark:bg-green-900 dark:text-green-100' : '',
             toast.variant === 'warning' ? 'border-yellow-200 bg-yellow-50 text-yellow-900 dark:border-yellow-800 dark:bg-yellow-900 dark:text-yellow-100' : '',
             toast.variant === 'info' ? 'border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-800 dark:bg-blue-900 dark:text-blue-100' : '',
-            toastClass
+            content.toastClass
           )"
-          :style="toastStyle"
+          :style="content.toastStyle"
           @mouseenter="pauseToast(toast.id)"
           @mouseleave="resumeToast(toast.id)"
         >
@@ -139,9 +139,11 @@ import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 
 export default {
   props: {
-        // Individual props will be auto-generated based on the component type
-        // This is a placeholder that will be manually refined per component
-    },
+    content: {
+      type: Object,
+      default: () => ({})
+    }
+  },
   emits: ['toast-show', 'toast-dismiss', 'toast-action'],
   setup(props, { emit }) {
     // Import utility function
@@ -153,12 +155,12 @@ export default {
     const timers = ref(new Map())
 
     const visibleToasts = computed(() => {
-      const max = props.maxToasts || 5
+      const max = props.content.maxToasts || 5
       return toasts.value.slice(0, max)
     })
 
     const getPositionClasses = () => {
-      const position = props.position || 'bottom-right'
+      const position = props.content.position || 'bottom-right'
       
       const positions = {
         'top-left': 'top-0 left-0',
@@ -192,7 +194,7 @@ export default {
       }
 
       // Add to beginning for bottom positions, end for top positions
-      if (props.position?.startsWith('bottom')) {
+      if (props.content.position?.startsWith('bottom')) {
         toasts.value.unshift(toast)
       } else {
         toasts.value.push(toast)
@@ -235,13 +237,13 @@ export default {
     }
 
     const pauseToast = (id) => {
-      if (props.pauseOnHover !== false) {
+      if (props.content.pauseOnHover !== false) {
         stopTimer(id)
       }
     }
 
     const resumeToast = (id) => {
-      if (props.pauseOnHover !== false) {
+      if (props.content.pauseOnHover !== false) {
         const toast = toasts.value.find(t => t.id === id)
         if (toast && toast.duration && toast.duration > 0) {
           const elapsed = Date.now() - toast.startTime
@@ -305,7 +307,7 @@ export default {
     }
 
     // Watch for external toast requests
-    watch(() => props.toastQueue, (newQueue) => {
+    watch(() => props.content.toastQueue, (newQueue) => {
       if (newQueue && newQueue.length > 0) {
         newQueue.forEach(toastData => {
           addToast(toastData)
